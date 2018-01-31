@@ -21,6 +21,8 @@ def key_to_description(character):
 
 
 def description_to_key(character):
+    if not 64 <= ord(character) <= 95:
+        raise ValueError()
     return chr(ord(character) - ord('@'))
 
 

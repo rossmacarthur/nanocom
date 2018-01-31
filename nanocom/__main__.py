@@ -87,21 +87,21 @@ def eprint(*args, **kwargs):
 def path(string):
     if os.path.exists(string):
         return string
-    raise TypeError
+    raise TypeError()
 
 
 def baudrate(string):
     try:
         return int(string)
     except Exception:
-        raise TypeError
+        raise TypeError()
 
 
 def exit_char(string):
     try:
         return description_to_key(string)
     except Exception:
-        raise TypeError
+        raise TypeError()
 
 
 def cli():
@@ -134,7 +134,7 @@ def cli():
         Option(['-c', '--exit-char'],
                type=exit_char,
                default='\x1d',
-               help='The exit character. The default is ], so Ctrl+] will be used to exit.')
+               help='The exit character (A to Z, [, \, ], or _) where Ctrl+<value> is used to exit. The default is ].')
     )
 
     try:

@@ -16,18 +16,18 @@ Install it using
 Example usage would be
 
 ::
-    
+
     nanocom --port /dev/ttyUSB0 --baudrate 115200
 
 The following options are available
 
 ::
 
-  -h, --help       Show the help message and exit.
+  -h, --help       Show this message and exit.
   -v, --version    Show the version and exit.
   -p, --port       The serial port. Examples include /dev/tty.usbserial or /dev/ttyUSB0.
   -b, --baudrate   The baudrate of the serial port. The default is 115200.
-  -c, --exit-char  The exit character. The default is ], so Ctrl+] will be used to exit.
+  -c, --exit-char  The exit character (A to Z, [, \, ], or _) where Ctrl+<value> is used to exit. The default is ].
 
 
 Why another serial client?
