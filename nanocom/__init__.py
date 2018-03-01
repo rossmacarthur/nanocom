@@ -16,16 +16,6 @@ except NameError:
     pass
 
 
-def key_to_description(character):
-    return chr(ord('@') + ord(character))
-
-
-def description_to_key(character):
-    if not 64 <= ord(character) <= 95:
-        raise ValueError()
-    return chr(ord(character) - ord('@'))
-
-
 class Console(object):
 
     def __init__(self):
@@ -65,10 +55,11 @@ class Console(object):
 
 class Nanocom(object):
 
-    def __init__(self, serial_instance, exit_character):
+    def __init__(self, serial_instance, exit_character='\x1d', character_map=None):
         self.console = Console()
         self.serial = serial_instance
         self.exit_character = exit_character
+        self.character_map = character_map
         self.rx_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
         self.tx_encoder = codecs.getincrementalencoder('UTF-8')('replace')
 
@@ -116,6 +107,8 @@ class Nanocom(object):
                 if c == self.exit_character:
                     self.stop()
                     break
+                elif self.character_map and c in self.character_map:
+                    self.serial.write(self.tx_encoder.encode(self.character_map[c]))
                 else:
                     self.serial.write(self.tx_encoder.encode(c))
         except Exception:

@@ -2,7 +2,7 @@ from __future__ import print_function, unicode_literals
 import os
 import serial
 import sys
-from nanocom import __version__, Nanocom, key_to_description, description_to_key
+from nanocom import __version__, Nanocom
 
 
 class ParserExitWithMessage(Exception):
@@ -13,16 +13,39 @@ class ParserError(Exception):
     pass
 
 
+class OptionType(object):
+
+    def __init__(self):
+        if not hasattr(self, 'name'):
+            self.name = self.__class__.__name__
+        if not hasattr(self, 'help_name'):
+            self.help_name = self.name.upper()
+
+    def __call__(self, *args):
+        raise NotImplemented()
+
+
 class Option(object):
 
-    def __init__(self, identifiers, default=None, exit=None, help='', is_flag=None, type=None):
+    def __init__(self, identifiers, default=None, exit=None, help='', is_flag=None, type=None, args=1, multiple=False,
+                 required=True):
         self.name = max(identifiers, key=len).lstrip('-').replace('-', '_')
         self.identifiers = sorted(identifiers, key=len)
         self.default = default
         self.exit = exit
         self.help = help
-        self.is_flag = is_flag
+        self.is_flag = type is None
         self.type = type
+        self.args = args
+        self.multiple = multiple
+        self.required = required
+
+    @property
+    def help_text(self):
+        prefix = ', '.join(self.identifiers)
+        if self.type:
+            prefix += ' ' + self.type.help_name
+        return (prefix, self.help)
 
     def __str__(self):
         return ' / '.join(self.identifiers)
@@ -38,70 +61,109 @@ class Parser(object):
 
     def help_message(self, help_prefix):
         helps = [('-h, --help', 'Show this message and exit.')]
-        helps += [(', '.join(option.identifiers), option.help) for option in self.options]
+        helps += [option.help_text for option in self.options]
         col = len(max((h[0] for h in helps), key=len))
         usage = 'Usage: {prog} [OPTIONS]'
         option_list = '\n'.join('  {:<{col}}  {}'.format(*h, col=col) for h in helps)
         return usage + help_prefix + '\nOptions:\n' + option_list
 
-    def parse_id(self, option, index):
+    def parse_id(self, option):
         if option.is_flag:
             if option.exit:
                 raise ParserExitWithMessage(option.exit.format(**self.help_format))
             else:
                 return True
-        elif index + 1 >= len(self.args) or self.args[index + 1].startswith('-'):
-            raise ParserError('{} requires an argument'.format(self.args[index]))
+        elif len(self.args[:option.args]) != option.args or \
+                any(arg.startswith('-') for arg in self.args[:option.args]):
+            message = '{} requires {} argument'.format(option, option.args)
+            if option.args > 1:
+                message += 's'
+            raise ParserError(message)
+
+        value, self.args = self.args[:option.args], self.args[option.args:]
 
         try:
-            value = self.args[index + 1]
-            return option.type(value)
-        except TypeError:
+            return option.type(*value)
+        except (TypeError, ValueError):
             raise ParserError('invalid value for {}: {} is not a valid {}'.format(
-                self.args[index], value, option.type.__name__,))
+                option, ' '.join(value), option.type.name.lower(),))
 
     def parse(self):
         # loop through args and collect values
-        for index, arg in enumerate(self.args):
+        while self.args:
+            arg = self.args.pop(0)
             if arg.startswith('-'):
                 for option in self.options:
                     if arg in option.identifiers:
-                        setattr(self, option.name, self.parse_id(option, index))
+                        parsed = self.parse_id(option)
+                        if hasattr(self, option.name):
+                            if option.multiple:
+                                getattr(self, option.name).append(parsed)
+                            else:
+                                raise ParserError('received multiple of option {}'.format(arg))
+                        elif option.multiple:
+                            setattr(self, option.name, [parsed])
+                        else:
+                            setattr(self, option.name, parsed)
                         break
                 else:
                     raise ParserError('unrecognised option {}'.format(arg))
+            else:
+                raise ParserError('unexpected argument {}'.format(arg))
 
         # check all values have been set else set defaults or raise error
         for option in self.options:
             if not hasattr(self, option.name) and not option.is_flag:
-                if option.default is None:
+                if not option.default and option.required:
                     raise ParserError('{} is required'.format(option))
                 else:
                     setattr(self, option.name, option.default)
+
+
+class Path(OptionType):
+
+    def __call__(self, arg):
+        if os.path.exists(arg):
+            return arg
+        raise ValueError()
+
+
+class Integer(OptionType):
+
+    def __call__(self, arg):
+        return int(arg)
+
+
+class ExitCharacter(OptionType):
+    name = 'Exit Character'
+    help_name = 'CHAR'
+
+    def __call__(self, arg):
+        return description_to_key(arg)
+
+
+class CharacterMap(OptionType):
+    name = 'Character Map'
+    help_name = 'KEY VALUE'
+
+    def __call__(self, *args):
+        if len(args) != 2 or len(args[0]) != 1:
+            raise ValueError()
+        return args
 
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def path(string):
-    if os.path.exists(string):
-        return string
-    raise TypeError()
+def key_to_description(character):
+    return chr(ord('@') + ord(character))
 
 
-def baudrate(string):
-    try:
-        return int(string)
-    except Exception:
-        raise TypeError()
-
-
-def exit_char(string):
-    try:
-        return description_to_key(string)
-    except Exception:
-        raise TypeError()
+def description_to_key(character):
+    if not 64 <= ord(character) <= 95:
+        raise ValueError()
+    return chr(ord(character) - ord('@'))
 
 
 def cli():
@@ -118,30 +180,40 @@ def cli():
         help_message_prefix,
 
         Option(['-v', '--version'],
-               is_flag=True,
                exit='{prog} ' + __version__,
                help='Show the version and exit.'),
 
         Option(['-p', '--port'],
-               type=path,
+               type=Path(),
                help='The serial port. Examples include /dev/tty.usbserial or /dev/ttyUSB0.'),
 
         Option(['-b', '--baudrate'],
-               type=baudrate,
+               type=Integer(),
                default=115200,
                help='The baudrate of the serial port. The default is 115200.'),
 
+        Option(['-m', '--map'],
+               type=CharacterMap(),
+               args=2,
+               multiple=True,
+               required=False,
+               help='A character map where a string VALUE is sent for a character KEY. Multiple maps are allowed.'),
+
         Option(['-c', '--exit-char'],
-               type=exit_char,
+               type=ExitCharacter(),
                default='\x1d',
-               help='The exit character (A to Z, [, \, ], or _) where Ctrl+<value> is used to exit. The default is ].')
+               help='The exit character (A to Z, [, \, ], or _) where Ctrl+CHAR is used to exit. The default is ].')
     )
 
     try:
         parser.parse()
 
+        character_map = None
+        if parser.map:
+            character_map = dict(parser.map)
+
         com = Nanocom(serial.serial_for_url(parser.port, parser.baudrate),
-                      exit_character=parser.exit_char)
+                      exit_character=parser.exit_char, character_map=character_map)
 
         eprint('*** nanocom started ***')
         eprint('*** Ctrl+{} to exit  ***'.format(key_to_description(com.exit_character)))
