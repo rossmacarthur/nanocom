@@ -173,7 +173,7 @@ def cli():
   | | | | (_| | | | | (_) | (_| (_) | | | | | |
   |_| |_|\\__,_|_| |_|\\___/ \\___\\___/|_| |_| |_|
 
-  An ultra simple serial client using pyserial.
+  An ultra simple serial client.
 """
 
     parser = Parser(

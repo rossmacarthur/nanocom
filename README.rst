@@ -1,11 +1,10 @@
 nanocom
 =======
 
-An ultra simple serial client using pyserial.
+An ultra simple command line serial client.
 
-
-Usage
------
+Getting started
+---------------
 
 Install it using
 
@@ -13,25 +12,42 @@ Install it using
 
     pip install nanocom
 
-Example usage would be
+and connect to your serial port using
 
 ::
 
     nanocom --port /dev/ttyUSB0 --baudrate 115200
 
-The following options are available
-
-::
-
-  -h, --help              Show this message and exit.
-  -v, --version           Show the version and exit.
-  -p, --port PATH         The serial port. Examples include /dev/tty.usbserial or /dev/ttyUSB0.
-  -b, --baudrate INTEGER  The baudrate of the serial port. The default is 115200.
-  -m, --map KEY VALUE     A character map where a string VALUE is sent for a character KEY. Multiple maps are allowed.
-  -c, --exit-char CHAR    The exit character (A to Z, [, \, ], or _) where Ctrl+CHAR is used to exit. The default is ].
-
-
 Why another serial client?
 --------------------------
 
-I couldn't find anything to suit my need. I tried many different things, from GNU Screen to bash scripts. But they all were either too clunky, interfered with ``tmux``, or didn't pass ANSI escape codes through. The best thing I found was ``python -m serial.tools.miniterm`` but it had an odd menu system that wasn't needed. Nanocom is a simple modification of ``serial.tools.miniterm``.
+I needed something simple, that didn't intefere with `tmux`_, and passed all characters across the serial interface, including ANSI escape codes, similar to how you would communicate with ``ssh``. The best thing I found was ``python -m serial.tools.miniterm`` but even that was not simple enough. Nanocom is a simpler modification of ``python -m serial.tools.miniterm``.
+
+Usage
+-----
+
+Running ``nanocom --help`` will display all the cli options. The following options are available
+
+**-p, --port**
+
+The path to the serial port. On macOS it will be something like ``/dev/tty.usbserial`` and on Linux probably something like ``/dev/ttyUSB0``. This option is required.
+
+**-b, --baudrate**
+
+The baudrate of the serial port. This is typically something like ``9600`` or ``115200`` but any integer is accepted. If not given, this option defaults to ``115200``.
+
+**-m, --map**
+
+A character map, ``key``, ``value`` pair, such that when the ``key`` character is entered into the client the ``value`` string will be sent instead. The ``value`` string can be multiple characters and multiple character maps are allowed. An example would be if you wanted to send a carriage return and a new line when a new line character was given you would use ``--map "\n" "\r\n"``.
+
+**-c, --exit-char**
+
+The exit character where the Ctrl key and this character are used to exit the client. The character must be one of ``A`` to ``Z``, ``[``, ``\``, ``]``, or ``_``. For example if you gave the option ``--exit-char "\"`` then the client would exit when you pressed Ctrl + \\.
+
+License
+-------
+
+This project is licensed under the MIT License. See the `LICENSE.txt`_ file.
+
+.. _LICENSE.txt: LICENSE.txt
+.. _tmux: https://tmux.github.io/
