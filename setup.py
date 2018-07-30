@@ -32,6 +32,12 @@ install_requires = [
     'pyserial==3.4'
 ]
 
+extras_require = {
+    'linting': [
+        'flake8'
+    ]
+}
+
 entry_points = {
     'console_scripts': [
         'nanocom=nanocom.__main__:cli'
@@ -43,6 +49,7 @@ setup(
     packages=['nanocom'],
     version=version,
     install_requires=install_requires,
+    extras_require=extras_require,
     entry_points=entry_points,
     description='An ultra simple command line serial client',
     long_description=long_description,

@@ -27,8 +27,8 @@ class OptionType(object):
 
 class Option(object):
 
-    def __init__(self, identifiers, default=None, exit=None, help='', is_flag=None, type=None, args=1, multiple=False,
-                 required=True):
+    def __init__(self, identifiers, default=None, exit=None, help='', is_flag=None, type=None,
+                 args=1, multiple=False, required=True):
         self.name = max(identifiers, key=len).lstrip('-').replace('-', '_')
         self.identifiers = sorted(identifiers, key=len)
         self.default = default
@@ -57,7 +57,8 @@ class Parser(object):
         self.args = sys.argv[1:]
         self.help_format = {'prog': os.path.basename(sys.argv[0])}
         self.options = list(options)
-        self.options.append(Option(['-h', '--help'], is_flag=True, exit=self.help_message(help_prefix)))
+        self.options.append(Option(['-h', '--help'], is_flag=True,
+                            exit=self.help_message(help_prefix)))
 
     def help_message(self, help_prefix):
         helps = [('-h, --help', 'Show this message and exit.')]
@@ -197,12 +198,14 @@ def cli():
                args=2,
                multiple=True,
                required=False,
-               help='A character map where a string VALUE is sent for a character KEY. Multiple maps are allowed.'),
+               help='A character map where a string VALUE is sent for a character KEY. '
+                    'Multiple maps are allowed.'),
 
         Option(['-c', '--exit-char'],
                type=ExitCharacter(),
                default='\x1d',
-               help='The exit character (A to Z, [, \, ], or _) where Ctrl+CHAR is used to exit. The default is ].')
+               help='The exit character (A to Z, [, \, ], or _) where Ctrl+CHAR is used to exit. '
+                    'The default is ].')
     )
 
     try:
