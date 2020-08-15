@@ -6,7 +6,7 @@ import io
 import os
 import re
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def get_metadata():
@@ -39,6 +39,7 @@ setup(
     # Options
     install_requires=['click~=7.0', 'pyserial~=3.4'],
     entry_points={'console_scripts': ['nanocom=nanocom.__main__:cli']},
+    packages=find_packages(),
     # Metadata
     download_url='{url}/archive/{version}.tar.gz'.format(**metadata),
     project_urls={'Issue Tracker': '{url}/issues'.format(**metadata)},
