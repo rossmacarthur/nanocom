@@ -4,8 +4,6 @@ nanocom
 Ultra simple command line serial client.
 """
 
-from __future__ import unicode_literals
-
 import atexit
 import codecs
 import fcntl
@@ -22,20 +20,10 @@ __license__ = 'MIT'
 __description__ = 'Ultra simple command line serial client.'
 
 
-try:
-    chr = unichr
-except NameError:
-    pass
-
-
 class Console(object):
     def __init__(self):
-        if sys.version_info < (3, 0):
-            self.byte_output = sys.stdout
-            self.enc_stdin = codecs.getreader(sys.stdin.encoding)(sys.stdin)
-        else:
-            self.byte_output = sys.stdout.buffer
-            self.enc_stdin = sys.stdin
+        self.byte_output = sys.stdout.buffer
+        self.enc_stdin = sys.stdin
         self.fd = sys.stdin.fileno()
         self.old = termios.tcgetattr(self.fd)
         atexit.register(self.cleanup)

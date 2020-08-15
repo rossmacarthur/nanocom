@@ -37,7 +37,7 @@ metadata = get_metadata()
 
 setup(
     # Options
-    install_requires=['pyserial~=3.4'],
+    install_requires=['click~=7.0', 'pyserial~=3.4'],
     entry_points={'console_scripts': ['nanocom=nanocom.__main__:cli']},
     # Metadata
     download_url='{url}/archive/{version}.tar.gz'.format(**metadata),
