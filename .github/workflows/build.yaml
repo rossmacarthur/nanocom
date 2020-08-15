@@ -1,0 +1,50 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: extractions/setup-just@v1
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: just install-dev
+
+    - name: Lint
+      run: just lint
+
+  deploy:
+    needs: test
+    if: startsWith(github.event.ref, 'refs/tags')
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Check tag against package version
+      run: grep '__version__' nanocom/__init__.py | grep -q "'${GITHUB_REF#refs/tags/}'"
+
+    - name: Install dependencies
+      run: pip install --upgrade setuptools twine wheel
+
+    - name: Build distribution
+      run: python setup.py sdist bdist_wheel
+
+    - name: Publish artefacts
+      run: twine upload dist/*
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
