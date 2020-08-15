@@ -1,6 +1,7 @@
 # nanocom
 
 [![PyPI](https://img.shields.io/pypi/v/nanocom)](https://pypi.org/project/nanocom/)
+![PyPI: supported Python](https://img.shields.io/pypi/pyversions/nanocom)
 [![Build status](https://img.shields.io/github/workflow/status/rossmacarthur/nanocom/build)](https://github.com/rossmacarthur/nanocom/actions?query=workflow%3Abuild)
 [![Code style](https://img.shields.io/badge/code%20style-black-101010.svg)](https://github.com/psf/black)
 
