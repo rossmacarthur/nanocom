@@ -26,7 +26,7 @@ def find_version():
 
 version = find_version()
 
-long_description = read('README.rst')
+long_description = read('README.md')
 
 install_requires = [
     'pyserial==3.4'
@@ -53,6 +53,7 @@ setup(
     entry_points=entry_points,
     description='An ultra simple command line serial client',
     long_description=long_description,
+    long_description_content_type='text/markdown','text/markdown'
     author='Ross MacArthur',
     author_email='macarthur.ross@gmail.com',
     license='MIT',
