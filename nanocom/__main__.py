@@ -1,8 +1,11 @@
 from __future__ import print_function, unicode_literals
+
 import os
-import serial
 import sys
-from nanocom import __version__, Nanocom
+
+import serial
+
+from nanocom import Nanocom, __version__
 
 
 class ParserExitWithMessage(Exception):
@@ -14,7 +17,6 @@ class ParserError(Exception):
 
 
 class OptionType(object):
-
     def __init__(self):
         if not hasattr(self, 'name'):
             self.name = self.__class__.__name__
@@ -22,13 +24,22 @@ class OptionType(object):
             self.help_name = self.name.upper()
 
     def __call__(self, *args):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class Option(object):
-
-    def __init__(self, identifiers, default=None, exit=None, help='', is_flag=None, type=None,
-                 args=1, multiple=False, required=True):
+    def __init__(
+        self,
+        identifiers,
+        default=None,
+        exit=None,
+        help='',
+        is_flag=None,
+        type=None,
+        args=1,
+        multiple=False,
+        required=True,
+    ):
         self.name = max(identifiers, key=len).lstrip('-').replace('-', '_')
         self.identifiers = sorted(identifiers, key=len)
         self.default = default
@@ -52,13 +63,13 @@ class Option(object):
 
 
 class Parser(object):
-
     def __init__(self, help_prefix='', *options):
         self.args = sys.argv[1:]
         self.help_format = {'prog': os.path.basename(sys.argv[0])}
         self.options = list(options)
-        self.options.append(Option(['-h', '--help'], is_flag=True,
-                            exit=self.help_message(help_prefix)))
+        self.options.append(
+            Option(['-h', '--help'], is_flag=True, exit=self.help_message(help_prefix))
+        )
 
     def help_message(self, help_prefix):
         helps = [('-h, --help', 'Show this message and exit.')]
@@ -74,20 +85,25 @@ class Parser(object):
                 raise ParserExitWithMessage(option.exit.format(**self.help_format))
             else:
                 return True
-        elif len(self.args[:option.args]) != option.args or \
-                any(arg.startswith('-') for arg in self.args[:option.args]):
+        elif len(self.args[: option.args]) != option.args or any(
+            arg.startswith('-') for arg in self.args[: option.args]
+        ):
             message = '{} requires {} argument'.format(option, option.args)
             if option.args > 1:
                 message += 's'
             raise ParserError(message)
 
-        value, self.args = self.args[:option.args], self.args[option.args:]
+        n = option.args
+        value, self.args = self.args[:n], self.args[n:]
 
         try:
             return option.type(*value)
         except (TypeError, ValueError):
-            raise ParserError('invalid value for {}: {} is not a valid {}'.format(
-                option, ' '.join(value), option.type.name.lower(),))
+            raise ParserError(
+                'invalid value for {}: {} is not a valid {}'.format(
+                    option, ' '.join(value), option.type.name.lower(),
+                )
+            )
 
     def parse(self):
         # loop through args and collect values
@@ -101,7 +117,9 @@ class Parser(object):
                             if option.multiple:
                                 getattr(self, option.name).append(parsed)
                             else:
-                                raise ParserError('received multiple of option {}'.format(arg))
+                                raise ParserError(
+                                    'received multiple of option {}'.format(arg)
+                                )
                         elif option.multiple:
                             setattr(self, option.name, [parsed])
                         else:
@@ -122,7 +140,6 @@ class Parser(object):
 
 
 class Path(OptionType):
-
     def __call__(self, arg):
         if os.path.exists(arg):
             return arg
@@ -130,7 +147,6 @@ class Path(OptionType):
 
 
 class Integer(OptionType):
-
     def __call__(self, arg):
         return int(arg)
 
@@ -179,33 +195,38 @@ def cli():
 
     parser = Parser(
         help_message_prefix,
-
-        Option(['-v', '--version'],
-               exit='{prog} ' + __version__,
-               help='Show the version and exit.'),
-
-        Option(['-p', '--port'],
-               type=Path(),
-               help='The serial port. Examples include /dev/tty.usbserial or /dev/ttyUSB0.'),
-
-        Option(['-b', '--baudrate'],
-               type=Integer(),
-               default=115200,
-               help='The baudrate of the serial port. The default is 115200.'),
-
-        Option(['-m', '--map'],
-               type=CharacterMap(),
-               args=2,
-               multiple=True,
-               required=False,
-               help='A character map where a string VALUE is sent for a character KEY. '
-                    'Multiple maps are allowed.'),
-
-        Option(['-c', '--exit-char'],
-               type=ExitCharacter(),
-               default='\x1d',
-               help='The exit character (A to Z, [, \, ], or _) where Ctrl+CHAR is used to exit. '
-                    'The default is ].')
+        Option(
+            ['-v', '--version'],
+            exit='{prog} ' + __version__,
+            help='Show the version and exit.',
+        ),
+        Option(
+            ['-p', '--port'],
+            type=Path(),
+            help='The serial port. Examples include /dev/tty.usbserial or /dev/ttyUSB0.',
+        ),
+        Option(
+            ['-b', '--baudrate'],
+            type=Integer(),
+            default=115200,
+            help='The baudrate of the serial port. The default is 115200.',
+        ),
+        Option(
+            ['-m', '--map'],
+            type=CharacterMap(),
+            args=2,
+            multiple=True,
+            required=False,
+            help='A character map where a string VALUE is sent for a character KEY. '
+            'Multiple maps are allowed.',
+        ),
+        Option(
+            ['-c', '--exit-char'],
+            type=ExitCharacter(),
+            default='\x1d',
+            help='The exit character (A to Z, [, \\, ], or _) where Ctrl+CHAR is used to exit. '
+            'The default is ].',
+        ),
     )
 
     try:
@@ -215,11 +236,16 @@ def cli():
         if parser.map:
             character_map = dict(parser.map)
 
-        com = Nanocom(serial.serial_for_url(parser.port, parser.baudrate),
-                      exit_character=parser.exit_char, character_map=character_map)
+        com = Nanocom(
+            serial.serial_for_url(parser.port, parser.baudrate),
+            exit_character=parser.exit_char,
+            character_map=character_map,
+        )
 
         eprint('*** nanocom started ***')
-        eprint('*** Ctrl+{} to exit  ***'.format(key_to_description(com.exit_character)))
+        eprint(
+            '*** Ctrl+{} to exit  ***'.format(key_to_description(com.exit_character))
+        )
 
         com.start()
         try:

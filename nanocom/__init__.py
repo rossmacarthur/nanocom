@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
+
 import atexit
 import codecs
 import fcntl
 import sys
 import termios
 import threading
-
 
 __version__ = '1.1.0'
 
@@ -17,7 +17,6 @@ except NameError:
 
 
 class Console(object):
-
     def __init__(self):
         if sys.version_info < (3, 0):
             self.byte_output = sys.stdout
@@ -41,7 +40,7 @@ class Console(object):
 
     def getkey(self):
         c = self.enc_stdin.read(1)
-        if c == chr(0x7f):
+        if c == chr(0x7F):
             c = chr(8)
         return c
 
@@ -54,7 +53,6 @@ class Console(object):
 
 
 class Nanocom(object):
-
     def __init__(self, serial_instance, exit_character='\x1d', character_map=None):
         self.console = Console()
         self.serial = serial_instance

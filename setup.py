@@ -1,6 +1,7 @@
 import io
 import os
 import re
+
 from setuptools import setup
 
 
@@ -28,21 +29,11 @@ version = find_version()
 
 long_description = read('README.md')
 
-install_requires = [
-    'pyserial==3.4'
-]
+install_requires = ['pyserial==3.4']
 
-extras_require = {
-    'linting': [
-        'flake8'
-    ]
-}
+extras_require = {'linting': ['flake8']}
 
-entry_points = {
-    'console_scripts': [
-        'nanocom=nanocom.__main__:cli'
-    ]
-}
+entry_points = {'console_scripts': ['nanocom=nanocom.__main__:cli']}
 
 setup(
     name='nanocom',
@@ -53,12 +44,14 @@ setup(
     entry_points=entry_points,
     description='An ultra simple command line serial client',
     long_description=long_description,
-    long_description_content_type='text/markdown','text/markdown'
+    long_description_content_type='text/markdown',
     author='Ross MacArthur',
     author_email='macarthur.ross@gmail.com',
     license='MIT',
     url='https://github.com/rossmacarthur/nanocom',
-    download_url='https://github.com/rossmacarthur/nanocom/archive/{}.tar.gz'.format(version),
+    download_url='https://github.com/rossmacarthur/nanocom/archive/{}.tar.gz'.format(
+        version
+    ),
     keywords='serial client cli pyserial',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -72,6 +65,6 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6'
-    ]
+        'Programming Language :: Python :: 3.6',
+    ],
 )
