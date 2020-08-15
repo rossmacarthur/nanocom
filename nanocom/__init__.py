@@ -12,7 +12,7 @@ import termios
 import threading
 
 __title__ = 'nanocom'
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 __url__ = 'https://github.com/rossmacarthur/nanocom'
 __author__ = 'Ross MacArthur'
 __author_email__ = 'ross@macarthur.io'
