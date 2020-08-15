@@ -1,3 +1,7 @@
+"""
+Setup file for nanocom.
+"""
+
 import io
 import os
 import re
@@ -5,66 +9,51 @@ import re
 from setuptools import setup
 
 
-def read(*path):
+def get_metadata():
     """
-    Python 2/3 file reading.
+    Return metadata for nanocom.
     """
-    version_file = os.path.join(os.path.dirname(__file__), *path)
-    with io.open(version_file, encoding='utf8') as f:
-        return f.read()
+    here = os.path.abspath(os.path.dirname(__file__))
+    init_path = os.path.join(here, 'nanocom', '__init__.py')
+    readme_path = os.path.join(here, 'README.md')
+
+    with io.open(init_path, encoding='utf-8') as f:
+        about_text = f.read()
+
+    metadata = {
+        key: re.search(r'__' + key + r"__ = '(.*?)'", about_text).group(1)
+        for key in ('title', 'version', 'url', 'author', 'author_email', 'description')
+    }
+    metadata['name'] = metadata.pop('title')
+
+    with io.open(readme_path, encoding='utf-8') as f:
+        metadata['long_description'] = f.read()
+        metadata['long_description_content_type'] = 'text/markdown'
+
+    return metadata
 
 
-def find_version():
-    """
-    Regex search __init__.py so that we do not have to import.
-    """
-    text = read('nanocom', '__init__.py')
-    match = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', text, re.M)
-    if match:
-        return match.group(1)
-    raise RuntimeError('Unable to find version string.')
-
-
-version = find_version()
-
-long_description = read('README.md')
-
-install_requires = ['pyserial==3.4']
-
-extras_require = {'linting': ['flake8']}
-
-entry_points = {'console_scripts': ['nanocom=nanocom.__main__:cli']}
+metadata = get_metadata()
 
 setup(
-    name='nanocom',
-    packages=['nanocom'],
-    version=version,
-    install_requires=install_requires,
-    extras_require=extras_require,
-    entry_points=entry_points,
-    description='An ultra simple command line serial client',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    author='Ross MacArthur',
-    author_email='macarthur.ross@gmail.com',
-    license='MIT',
-    url='https://github.com/rossmacarthur/nanocom',
-    download_url='https://github.com/rossmacarthur/nanocom/archive/{}.tar.gz'.format(
-        version
-    ),
+    # Options
+    install_requires=['pyserial~=3.4'],
+    entry_points={'console_scripts': ['nanocom=nanocom.__main__:cli']},
+    # Metadata
+    download_url='{url}/archive/{version}.tar.gz'.format(**metadata),
+    project_urls={'Issue Tracker': '{url}/issues'.format(**metadata)},
     keywords='serial client cli pyserial',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
         'Operating System :: POSIX',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
+    **metadata,
 )

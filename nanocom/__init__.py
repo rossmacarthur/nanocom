@@ -1,3 +1,9 @@
+"""
+nanocom
+
+Ultra simple command line serial client.
+"""
+
 from __future__ import unicode_literals
 
 import atexit
@@ -7,7 +13,13 @@ import sys
 import termios
 import threading
 
+__title__ = 'nanocom'
 __version__ = '1.1.0'
+__url__ = 'https://github.com/rossmacarthur/nanocom'
+__author__ = 'Ross MacArthur'
+__author_email__ = 'ross@macarthur.io'
+__license__ = 'MIT'
+__description__ = 'Ultra simple command line serial client.'
 
 
 try:

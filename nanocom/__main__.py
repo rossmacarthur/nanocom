@@ -263,3 +263,7 @@ def cli():
     except ParserExitWithMessage as e:
         eprint(e)
         sys.exit(0)
+
+
+if __name__ == '__main__':
+    cli()
